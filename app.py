@@ -20,14 +20,17 @@ async def root():
 
 @app.get("/health")
 async def health():
+    """Checks a server is alive"""
     return {"status":"ok"}
 
 @app.get("/tasks")
 async def get_tasks():
+    """Retrieves all the tasks and displays in a list"""
     return tasks
 
 @app.get("/tasks/{id}")
-async def get_task(id:int):
+async def get_task_by_id(id:int):
+    """Retrieves only the task with a given id from the list"""
     for task in tasks:
         if task["id"] == id:
            return task
@@ -38,8 +41,8 @@ async def get_task(id:int):
     )
 
 @app.post("/tasks",status_code=status.HTTP_201_CREATED)
-async def new_task(item:Item):
-
+async def create_task(item:Item):
+    """Creates a new task and add it to the list"""
     if not item.title or not item.title.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,   
@@ -59,6 +62,7 @@ async def new_task(item:Item):
 
 @app.put("/tasks/{id}",response_model=Item)
 async def update_task(id: int, item: Item):
+    """select the task with a given id and update its content"""
 
     if item.title is None and item.done is None:
         raise HTTPException(
@@ -88,6 +92,7 @@ async def update_task(id: int, item: Item):
 
 @app.delete("/tasks/{id}",status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(id:int):
+    """Deletes the task with a given id from the list"""
     for task in tasks:
         if task["id"]==id:
             tasks.remove(task)
