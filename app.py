@@ -1,4 +1,4 @@
-from fastapi import FastAPI,HTTPException, status
+from fastapi import FastAPI,HTTPException, status,Response
 from pydantic import BaseModel
 
 
@@ -12,6 +12,7 @@ tasks=[
 
 class Item(BaseModel):
     title: str | None = None
+    done: bool | None = None
 
 @app.get("/")
 async def root():
@@ -46,15 +47,53 @@ async def new_task(item:Item):
         )
     new_id = max([t["id"] for t in tasks], default=0) + 1
     
-    # Create the new task object setting done to false
     created_task = {
         "id": new_id,
         "title": item.title.strip(),
         "done": False
     }
     
-    # Add it to the list
     tasks.append(created_task)
     
-    # Return the created task
     return created_task
+
+@app.put("/tasks/{id}",response_model=Item)
+async def update_task(id: int, item: Item):
+
+    if item.title is None and item.done is None:
+        raise HTTPException(
+         status_code=status.HTTP_400_BAD_REQUEST,  
+         detail={"error":"Empty request body"} 
+        )
+
+    for task in tasks:
+        if task["id"]==id:
+            if item.title is not None:
+                if not item.title.strip():
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={"error": "Title cannot be empty"}
+                    )
+                task["title"] = item.title.strip()
+            
+            if item.done is not None:
+                task["done"] = item.done
+                
+            return task
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail={"error": f"Task {id} not found"}
+    )
+
+@app.delete("/tasks/{id}",status_code=status.HTTP_204_NO_CONTENT)
+async def delete_task(id:int):
+    for task in tasks:
+        if task["id"]==id:
+            tasks.remove(task)
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": f"Task {id} not found"}
+        )
