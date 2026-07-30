@@ -7,9 +7,9 @@ This project is a backend task manager application that supports full CRUD opera
 
 ## Installation & Running
 
-Make sure you have [uv](https://github.com/astral-sh/uv) installed, then run this single command to start the server:
+Make sure you have [uv](https://github.com/astral-sh/uv) installed, then run this 
+ command uv sync followed by  uv run fastapi dev to start the server
 
-uv run fastapi dev
 
 ## API Endpoints Reference
 
